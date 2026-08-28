@@ -1,0 +1,6 @@
+﻿run,n_epoch,baseline_top1_pct,baseline_top5_pct,baseline_eer_pct,best_top1_pct,best_top1_epoch,best_top5_pct,best_top5_epoch,best_eer_pct,best_eer_epoch,loss_dau,loss_cuoi,phut_moi_epoch_tb
+v8_resnet34_gaussian_cosface,49,83.19,89.72,8.34,88.3,45,92.82,37,5.76,38,7.9966,1.8187,21.6
+redimnet2_arcface_saitrecipe,8,86.34,91.13,7.47,87.7,8,92.38,5,6.4,4,4.347,1.7014,92.3
+redimnet2_arcface_gaussianaug,4,87.32,92.38,6.41,87.76,4,92.27,2,6.5,2,6.0728,3.4016,87.9
+v9_resnet34_musan_rirs,2,83.19,89.72,8.34,86.07,2,90.37,2,8.09,1,7.5359,3.9981,27.7
+redimnet2_dung_recipe,2,84.0,90.48,8.7,84.66,2,90.42,2,8.29,2,14.1624,6.6505,96.2

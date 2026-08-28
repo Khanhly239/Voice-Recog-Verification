@@ -1,0 +1,4 @@
+﻿epoch,loss,train_acc_pct,lr,margin,opt_steps,epoch_time_s,top1_pct,top5_pct,eer_pct
+0,,,,,,,83.19,89.72,8.34
+1,7.5359,12.8,,,,1584.6,85.91,90.04,8.09
+2,3.9981,31.97,,,,1737.2,86.07,90.37,8.14

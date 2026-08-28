@@ -1,0 +1,37 @@
+# Phiên bản đã kiểm chứng chạy được: Python 3.10, Windows + CUDA 12.6
+
+# ---- Lõi: model + xử lý audio ----
+torch==2.7.1
+torchaudio==2.7.1
+# numpy 2.3+ cần Python 3.11+; dùng 2.2.6 trên Python 3.10
+numpy==2.2.6
+soundfile==0.13.1
+scipy>=1.15.0
+librosa>=0.10.2
+
+# ---- Chống giả mạo, ASR, so khớp nội dung ----
+onnxruntime>=1.20.0        # AASIST (CM_System)
+sherpa-onnx>=1.12.0        # ASR tiếng Việt (sonic_cipher/sherpa_vi_asr.py)
+faster-whisper>=1.1.0      # ASR thay thế (Challenge_System/speech_to_text.py)
+rapidfuzz>=3.12.0          # khớp nội dung đọc (Challenge_System/text_matcher.py)
+scikit-learn==1.6.1
+joblib==1.5.1
+
+# ---- API (chỉ cần nếu chạy api/) ----
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+python-multipart>=0.0.18
+psycopg2==2.9.10           # PostgreSQL, dùng bởi ASV_System/db_utils.py
+bcrypt>=4.1.0
+python-dotenv==1.1.1
+qrcode[pil]>=7.4.2
+
+# ---- Chỉ cần khi HUẤN LUYỆN LẠI (scripts/finetune_wespeaker/) ----
+# speechbrain>=1.0        # kiến trúc ECAPA lúc train; inference đã vendored nên không cần
+# huggingface_hub>=0.26   # tải checkpoint pretrained + dataset
+# pyarrow>=18             # đọc parquet VoxVietnam (chạy TÁCH tiến trình khỏi torch)
+# matplotlib>=3.9         # vẽ biểu đồ training
+# python-docx>=1.1        # xuất báo cáo Word
+
+# GPU (tùy chọn): cài torch theo https://pytorch.org/get-started/locally/
+# Inference chạy được trên CPU (~0,3 giây mỗi utterance).

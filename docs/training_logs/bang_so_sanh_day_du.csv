@@ -1,0 +1,15 @@
+﻿lan_thu,backbone,so_tham_so,frontend,loss,augmentation,du_lieu_train,optimizer,batch,so_epoch,loss_dau,loss_cuoi,loss_giam_pct,phut_moi_epoch,top1_pct,top5_pct,eer_pct,nguon_do,ghi_chu
+goc,ResNet34 (VoxCeleb2),6.63M,fbank80,—(zero-shot),—,—,—,—,,,,,,85.2,90.37,7.86,"do lai dong bo (CPU, test_cache_full)",
+goc-LM,ResNet34-LM (VoxCeleb2),6.63M,fbank80,—(zero-shot),—,—,—,—,,,,,,83.13,89.72,8.34,"do lai dong bo (CPU, test_cache_full)",
+v1,ResNet34,6.63M,fbank80,ArcFace m=0.2,khong,VIVOS 46 spk,Adam,32,,,,,,65.72,82.48,10.91,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+v2,ResNet34,6.63M,fbank80,ArcFace m=0.1,khong,VIVOS 46 spk,Adam,32,,,,,,,,,—,khong co best.pt (Top5 chua vuot baseline). Co: rong
+v3,ResNet34,6.63M,fbank80,ArcFace m=0.1,khong,VoxVietnam 91 spk,Adam,32,,,,,,84.77,90.04,7.67,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+v4,ResNet34,6.63M,fbank80,ArcFace m=0.1,khong,VoxVietnam 413 spk,Adam,32,,,,,,86.94,91.84,6.57,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+v5,ResNet34,6.63M,fbank80,ArcFace m=0.1,khong,VoxVietnam 814 spk,Adam,32,,,,,,87.81,92.55,5.94,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+v6,ResNet34-LM,6.63M,fbank80,ArcFace m=0.1,khong,VoxVietnam 954 spk,Adam,32,,,,,,87.87,92.55,6.03,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+v7,ResNet293-LM,28.6M,fbank80,ArcFace m=0.1,khong,VoxVietnam 954 spk,Adam,4 (BN dong bang),,,,,,87.76,92.76,5.76,"do lai dong bo (CPU, test_cache_full)",log khong con -> khong co so lieu loss
+R1,ReDimNet2-B6-LM,12.4M,TFMel72,ArcFace m=0.2 (recipe SAI),khong,VoxVietnam 954 + VoxCeleb1 1211,Adam,4,8,4.347,1.7014,60.9,92.3,87.32,92.38,6.41,result luu trong best.pt,do bang pipeline ReDimNet2 KHI CON BUG PADDING (pad 0 thay vi lap lai)
+R2,ReDimNet2-B6-LM,12.4M,TFMel72,ArcFace m=0.2 (recipe SAI),Gaussian+speed+gain,VoxVietnam 954 + VoxCeleb1 1211,Adam,4,4,6.0728,3.4016,44.0,87.9,,,,—,khong co best.pt -- train xong te hon luc bat dau (92.27 < 92.38 baseline)
+v8,ResNet34-LM,6.63M,fbank80,CosFace m=0.25,Gaussian+speed+gain,VoxVietnam 954 + VoxCeleb1 1211,Adam,32,49,7.9966,1.8187,77.3,21.6,88.14,92.82,6.09,"do lai dong bo (CPU, test_cache_full)",
+v9,ResNet34-LM,6.63M,fbank80,CosFace m=0.25,MUSAN+RIRS+speed,VoxVietnam 954 + VoxCeleb1 1211,Adam,32,2,7.5359,3.9981,46.9,27.7,86.07,90.37,8.14,"do lai dong bo (CPU, test_cache_full)",
+R3,ReDimNet2-B6-LM,12.4M,TFMel72,SphereFace2 m=0->0.2,MUSAN+RIRS+speed,VoxVietnam 954 + VoxCeleb1 1211,SGD+nesterov,4x64=256 (grad accum),2,14.1624,6.6505,53.0,96.2,85.2,90.75,8.33,result luu trong best.pt,"dang chay, so lieu la epoch tot nhat hien tai"

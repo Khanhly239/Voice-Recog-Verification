@@ -1,0 +1,41 @@
+# ---- Secrets: TUYET DOI khong commit ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials*.json
+
+# ---- Model weights & du lieu lon (dung GitHub Releases thay vi git) ----
+*.pt
+*.ckpt
+*.onnx
+*.pkl
+*.pth
+data/
+pretrained_models/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- Log & ket qua tam ----
+*.log
+scripts/logs/
+
+# ---- Du lieu ca nhan tu phien KYC (anh CMND, selfie, session) - TUYET DOI khong commit ----
+api/storage/
+*.jpg
+*.jpeg
+!docs/**/*.png

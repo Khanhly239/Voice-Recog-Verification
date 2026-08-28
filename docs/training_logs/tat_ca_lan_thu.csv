@@ -1,0 +1,13 @@
+﻿lan_thu,kien_truc,du_lieu_train,loss,augmentation,best_epoch,top1_pct,top5_pct,eer_pct,nguon,ghi_chu
+v1,ResNet34,VIVOS 46 spk,ArcFace m=0.2,khong,,,,,—,"khong co best.pt (Top5 chua vuot baseline). Co: epoch_12.pt,epoch_15.pt,epoch_3.pt,epoch_6.pt,epoch_9.pt,final.pt,latest.pt"
+v2,ResNet34,VIVOS 46 spk,ArcFace m=0.1,khong,,,,,—,khong co best.pt (Top5 chua vuot baseline). Co: rong
+v3,ResNet34,VoxVietnam 91 spk,ArcFace m=0.1,khong,4,,,23.52,best.pt,"script cu chi luu EER (best theo EER, chua theo doi Top1/Top5)"
+v4,ResNet34,VoxVietnam 413 spk,ArcFace m=0.1,khong,5,,,6.57,best.pt,"script cu chi luu EER (best theo EER, chua theo doi Top1/Top5)"
+v5,ResNet34,VoxVietnam 814 spk,ArcFace m=0.1,khong,12,,,5.94,best.pt,"script cu chi luu EER (best theo EER, chua theo doi Top1/Top5)"
+v6,ResNet34-LM,VoxVietnam 954 spk,ArcFace m=0.1,khong,17,87.87,92.55,6.03,best.pt,
+v7,ResNet293-LM,VoxVietnam 954 spk,ArcFace m=0.1,khong,4,87.81,92.76,5.75,best.pt,
+R1,ReDimNet2-B6-LM,VoxVietnam+VoxCeleb1,ArcFace m=0.2 (recipe sai),khong,5,87.32,92.38,6.41,best.pt,
+R2,ReDimNet2-B6-LM,VoxVietnam+VoxCeleb1,ArcFace m=0.2 (recipe sai),Gaussian,,,,,—,khong co best.pt (Top5 chua vuot baseline). Co: rong
+v8,ResNet34-LM,VoxVietnam+VoxCeleb1,CosFace m=0.25,Gaussian,37,88.14,92.82,6.09,best.pt,
+v9,ResNet34-LM,VoxVietnam+VoxCeleb1,CosFace m=0.25,MUSAN+RIRS,2,86.07,90.37,8.14,best.pt,
+R3,ReDimNet2-B6-LM,VoxVietnam+VoxCeleb1,SphereFace2 m=0->0.2,MUSAN+RIRS,4,85.2,90.75,8.33,best.pt,

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Thu dữ liệu khẩu hình chữ số</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--line:#e2e5ec;--text:#111827;--muted:#6b7280;--blue:#2563eb;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 4px}
+p.muted{color:var(--muted);font-size:13px;margin:4px 0 14px}
+a{color:var(--blue);font-weight:600;text-decoration:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:14px}
+button{padding:10px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-blue{background:var(--blue);color:#fff}.btn-green{background:var(--green);color:#fff}.btn-gray{background:#475569;color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.cam{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;max-height:340px}
+.cam video{width:100%;height:100%;object-fit:cover}
+.digit-box{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px}
+.digit-box .num{font-size:64px;font-weight:800;line-height:1}
+.digit-box .word{font-size:28px;font-weight:700;margin-top:6px}
+.digit-box .hint{font-size:13px;opacity:.85;margin-top:8px}
+.rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:6px;visibility:hidden;animation:pulse 1s infinite}
+.rec-dot.on{visibility:visible}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:10px}
+.cell{text-align:center;font-size:12px;padding:6px 0;border-radius:6px;background:#eef2f7}
+.cell .n{font-weight:700}.cell .c{color:var(--muted)}
+.log{font-family:Consolas,monospace;font-size:12px;background:#0c1222;color:#dbeafe;padding:10px;border-radius:8px;min-height:40px;white-space:pre-wrap;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Thu dữ liệu khẩu hình chữ số</h1>
+  <p class="muted">Đọc lần lượt từng chữ số trước camera (mặt chính diện, đủ sáng, thấy rõ miệng). Mỗi lần ghi ~1.5 giây. Dữ liệu dùng để xây bộ template khẩu hình OTP. <a href="/">← Dashboard</a></p>
+
+  <div class="card">
+    <div class="cam"><video id="cam" autoplay playsinline muted></video></div>
+    <button id="btnCam" class="btn-gray">Bật camera</button>
+    <span id="camState" class="muted"></span>
+  </div>
+
+  <div class="card">
+    <div class="digit-box">
+      <div class="num" id="digitNum">–</div>
+      <div class="word" id="digitWord">Bật camera để bắt đầu</div>
+      <div class="hint" id="digitHint"></div>
+      <div style="margin-top:10px"><span class="rec-dot" id="dot"></span><span id="recState"></span></div>
+    </div>
+    <button id="btnRec" class="btn-green" disabled>Ghi &amp; lưu (1.5s)</button>
+    <button id="btnSkip" class="btn-gray" disabled>Bỏ qua số này</button>
+    <button id="btnAuto" class="btn-blue" disabled>Tự động chạy hết 1 vòng 0→9</button>
+    <div class="grid" id="grid"></div>
+    <div class="log" id="log">Chưa thu clip nào.</div>
+  </div>
+</div>
+
+<script>
+const WORDS = {0:"không",1:"một",2:"hai",3:"ba",4:"bốn",5:"năm",6:"sáu",7:"bảy",8:"tám",9:"chín"};
+const $ = (id)=>document.getElementById(id);
+let stream=null, recorder=null, current=0, autoRun=false;
+
+function renderGrid(stats){
+  const g=$("grid"); g.innerHTML="";
+  for(let d=0; d<10; d++){
+    const n=(stats && stats[d])||0;
+    const cell=document.createElement("div");
+    cell.className="cell";
+    cell.innerHTML=`<div class="n">${d}</div><div class="c">${WORDS[d]}</div><div class="c">${n}</div>`;
+    if(d===current) cell.style.outline="2px solid #2563eb";
+    g.appendChild(cell);
+  }
+}
+async function refreshStats(){
+  try{ const r=await fetch("/api/v1/collect/stats"); const d=await r.json(); renderGrid(d.per_digit);
+    $("log").textContent = `Tổng clip đã thu: ${d.total}\n` + Object.entries(d.per_digit).map(([k,v])=>`${k}(${WORDS[k]}):${v}`).join("  ");
+  }catch(e){}
+}
+function showDigit(d){
+  current=d; $("digitNum").textContent=d; $("digitWord").textContent='"'+WORDS[d]+'"';
+  $("digitHint").textContent="Nhấn Ghi rồi đọc to: "+WORDS[d];
+  renderGrid(window._lastStats||{});
+}
+$("btnCam").onclick=async()=>{
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:"user"},audio:true});
+    $("cam").srcObject=stream; $("camState").textContent="Camera đang bật";
+    $("btnRec").disabled=false; $("btnSkip").disabled=false; $("btnAuto").disabled=false;
+    showDigit(0); refreshStats();
+  }catch(e){ alert("Không mở được camera: "+e.message); }
+};
+function recordOnce(digit){
+  return new Promise((resolve,reject)=>{
+    if(!stream) return reject(new Error("Chưa bật camera"));
+    const mime=MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")?"video/webm;codecs=vp8,opus":"video/webm";
+    const chunks=[]; recorder=new MediaRecorder(stream,{mimeType:mime});
+    recorder.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+    recorder.onstop=async()=>{
+      $("dot").classList.remove("on"); $("recState").textContent="Đang lưu…";
+      const blob=new Blob(chunks,{type:"video/webm"});
+      const fd=new FormData(); fd.append("digit",String(digit)); fd.append("clip",blob,`digit_${digit}.webm`);
+      try{
+        const r=await fetch("/api/v1/collect/digit",{method:"POST",body:fd});
+        const d=await r.json(); if(!r.ok) throw new Error(d.detail||r.status);
+        $("recState").textContent=`Đã lưu (số ${digit} có ${d.count_for_digit} clip)`;
+        await refreshStats(); resolve();
+      }catch(e){ $("recState").textContent="Lỗi lưu: "+e.message; reject(e); }
+    };
+    $("dot").classList.add("on"); $("recState").textContent="Đang ghi… đọc: "+WORDS[digit];
+    recorder.start();
+    setTimeout(()=>{ try{recorder.stop();}catch(_){} }, 1500);
+  });
+}
+$("btnRec").onclick=async()=>{ $("btnRec").disabled=true; try{ await recordOnce(current); }catch(_){}
+  current=(current+1)%10; showDigit(current); $("btnRec").disabled=false; };
+$("btnSkip").onclick=()=>{ current=(current+1)%10; showDigit(current); };
+$("btnAuto").onclick=async()=>{
+  $("btnAuto").disabled=true; $("btnRec").disabled=true; $("btnSkip").disabled=true;
+  for(let d=0; d<10; d++){ showDigit(d); await new Promise(r=>setTimeout(r,900)); try{ await recordOnce(d); }catch(_){} await new Promise(r=>setTimeout(r,400)); }
+  $("btnAuto").disabled=false; $("btnRec").disabled=false; $("btnSkip").disabled=false;
+  showDigit(0); alert("Xong 1 vòng 0→9. Có thể chạy thêm vòng nữa để tăng số mẫu.");
+};
+if(!navigator.mediaDevices||!window.MediaRecorder){ $("btnCam").disabled=true; $("camState").textContent="Trình duyệt không hỗ trợ ghi hình"; }
+</script>
+</body>
+</html>

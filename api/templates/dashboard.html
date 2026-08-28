@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Voice KYC Dashboard</title>
+<style>
+:root{
+  --bg:#f3f5f9;--card:#fff;--line:#e2e5ec;--text:#111827;--muted:#6b7280;
+  --blue:#2563eb;--green:#15803d;--red:#b91c1c;--yellow:#a16207;
+  --dark:#0c1222;--dark2:#162032;--dtext:#dbeafe;
+}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+.wrap{max-width:1280px;margin:0 auto;padding:14px 18px}
+
+/* ── header ── */
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.header h1{margin:0;font-size:22px}
+.links{margin:2px 0 10px}
+.links a{color:var(--blue);text-decoration:none;margin-right:14px;font-weight:600;font-size:14px}
+
+/* ── badge ── */
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;border:1px solid transparent;vertical-align:middle}
+.badge.ok{background:#e8f7ee;color:var(--green);border-color:#b9eacb}
+.badge.fail{background:#fdecec;color:var(--red);border-color:#f3b2b2}
+.badge.warn{background:#fff7e6;color:var(--yellow);border-color:#f2d69a}
+.badge.info{background:#eaf2ff;color:#1d4ed8;border-color:#bdd3ff}
+
+/* ── tabs ── */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:16px}
+.tab-btn{background:none;border:none;padding:10px 20px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── cards / forms ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:14px}
+.card h3{margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+label{display:block;margin-top:8px;font-weight:600;font-size:13px}
+input[type=text],input[type=file],select{width:100%;padding:9px 10px;margin-top:4px;border-radius:8px;border:1px solid #d1d5db;font-size:14px}
+input:focus{border-color:#7aa2ff;outline:2px solid #d9e6ff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+button,.btn{display:inline-block;padding:10px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;text-align:center}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:#1d4ed8}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#166534}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#991b1b}
+.btn-gray{background:#475569;color:#fff}
+.btn-gray:hover{background:#334155}
+.btn-sm{padding:6px 12px;font-size:12px}
+button:disabled,.btn:disabled{opacity:.45;cursor:not-allowed}
+.full{width:100%;margin-top:10px}
+
+/* ── result boxes ── */
+.result{margin-top:12px;background:var(--dark);color:var(--dtext);padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-word;min-height:48px;font-size:12px;font-family:'Cascadia Code',Consolas,monospace}
+
+/* ── live KYC layout ── */
+.kyc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.kyc-grid{grid-template-columns:1fr}}
+
+.cam-box{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.cam-box video{width:100%;height:100%;object-fit:cover}
+.cam-box .placeholder{color:#555;font-size:14px;text-align:center;padding:20px}
+.rec-dot{position:absolute;top:10px;left:10px;width:12px;height:12px;border-radius:50%;background:#ef4444;animation:pulse 1s infinite;display:none}
+.rec-dot.on{display:block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.rec-timer{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;display:none}
+.rec-timer.on{display:block}
+
+/* ── challenge display ── */
+.challenge-box{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;border-radius:12px;padding:20px;text-align:center;margin-bottom:12px}
+.challenge-box .label{font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:6px}
+.challenge-box .otp{font-size:36px;font-weight:800;letter-spacing:8px;margin:8px 0}
+.challenge-box .hint{font-size:13px;opacity:.8;margin-top:4px}
+.countdown{font-size:13px;color:var(--yellow);font-weight:600;margin-top:6px}
+
+/* ── ASR live transcript ── */
+.asr-box{background:var(--dark2);border-radius:10px;padding:14px;min-height:64px;margin-bottom:10px}
+.asr-box .asr-label{font-size:11px;text-transform:uppercase;color:#64748b;letter-spacing:1px;margin-bottom:4px}
+.asr-box .asr-text{color:#93c5fd;font-size:16px;font-weight:600;min-height:24px}
+
+/* ── score bar ── */
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:10px}
+.score-item{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.score-item .sname{font-size:11px;color:var(--muted);text-transform:uppercase}
+.score-item .sval{font-size:18px;font-weight:700;margin-top:2px}
+.score-item .sbar{height:4px;border-radius:2px;background:#e2e8f0;margin-top:4px;overflow:hidden}
+.score-item .sfill{height:100%;border-radius:2px;transition:width .4s}
+
+/* ── history ── */
+.hist-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap}
+.hist-list{max-height:400px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+.hist-item{border-bottom:1px solid #eef2f7;padding:10px 12px;font-size:13px}
+.hist-item:last-child{border-bottom:none}
+.hist-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.hist-meta{color:var(--muted);font-size:11px}
+.hist-empty{padding:24px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <div>
+    <h1>Voice KYC Dashboard</h1>
+    <p class="muted" style="margin:2px 0 0;font-size:13px">Voice registration, real-time camera verification, and OTP challenge.</p>
+  </div>
+  <span id="apiStatus" class="badge warn">API: checking…</span>
+</div>
+<div class="links">
+  <a href="/docs" target="_blank">Swagger Docs</a>
+  <a href="/api/v1/health" target="_blank">Health</a>
+  <a href="/voice-kyc" target="_blank">Voice-only KYC</a>
+  <a href="/collect-digits" target="_blank">Collect digits (local)</a>
+  <a href="/gop-du-lieu" target="_blank">Public collection</a>
+</div>
+
+<!-- ═══ TABS ═══ -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="register">Register Voice</button>
+  <button class="tab-btn" data-tab="livekyc">Live KYC</button>
+  <button class="tab-btn" data-tab="sherpa">Sherpa VI ASR</button>
+  <button class="tab-btn" data-tab="history">History</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 1 — REGISTER VOICE
+     ═══════════════════════════════════════════════ -->
+<div id="tab-register" class="tab-panel active">
+  <div class="card" style="max-width:560px">
+    <h3>
+      <span>Register Speaker (3 audio samples)</span>
+      <span id="regBadge" class="badge info">Idle</span>
+    </h3>
+    <form id="regForm">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="e.g. lily01" required />
+      <label>Password (min 8 characters)</label>
+      <input type="password" name="password" minlength="8" maxlength="128" autocomplete="new-password" required />
+      <div class="row2">
+        <div><label>Audio 1 (.wav / .flac)</label><input type="file" name="audio1" accept=".wav,.flac,audio/*" required /></div>
+        <div><label>Audio 2</label><input type="file" name="audio2" accept=".wav,.flac,audio/*" required /></div>
+      </div>
+      <label>Audio 3</label>
+      <input type="file" name="audio3" accept=".wav,.flac,audio/*" required />
+      <button type="submit" id="regBtn" class="btn btn-blue full">Register</button>
+    </form>
+    <div id="regResult" class="result">Waiting…</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 2 — LIVE KYC
+     ═══════════════════════════════════════════════ -->
+<div id="tab-livekyc" class="tab-panel">
+
+  <!-- Step 1: username + start -->
+  <div class="card" id="kycStep1">
+    <h3><span>Step 1 — Enter Username</span></h3>
+    <div class="row2">
+      <div>
+        <label>Registered username</label>
+        <input type="text" id="kycUser" placeholder="e.g. lily01" required />
+      </div>
+      <div>
+        <label>Password</label>
+        <input type="password" id="kycPass" autocomplete="current-password" placeholder="Required if account has a password" />
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button id="kycStartBtn" class="btn btn-blue full">Start KYC Session</button>
+      </div>
+    </div>
+    <div id="kycStartResult" class="result" style="min-height:36px">Enter username and click Start.</div>
+  </div>
+
+  <!-- Step 2–4: camera + challenge + ASR + results -->
+  <div id="kycMain" style="display:none">
+    <div class="kyc-grid">
+
+      <!-- LEFT — camera -->
+      <div>
+        <div class="card" style="padding:8px">
+          <div class="cam-box" id="camBox">
+            <div class="placeholder" id="camPlaceholder">Camera will appear here</div>
+            <video id="camVideo" autoplay playsinline muted style="display:none"></video>
+            <canvas id="camOverlay" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+            <div class="rec-dot" id="recDot"></div>
+            <div class="rec-timer" id="recTimer">00:00</div>
+          </div>
+        </div>
+        <div id="mouthPanel" class="card" style="margin-top:6px;padding:10px;display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:600">Mouth tracking <span style="font-weight:400;color:var(--muted)">(guidance only)</span></span>
+            <span id="mouthState" class="badge info">waiting…</span>
+          </div>
+          <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+            Mouth openings seen: <b id="syllCount" style="color:var(--text)">0</b>
+            <span id="syllExpect"></span>
+          </div>
+          <div class="sbar" style="height:6px;border-radius:3px;background:#e2e8f0;margin-top:6px;overflow:hidden">
+            <div id="opennessBar" class="sfill" style="height:100%;width:0%;background:#38bdf8;transition:width .08s"></div>
+          </div>
+          <div id="mouthNote" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+        </div>
+        <div class="row2" style="margin-top:6px">
+          <button id="openCamBtn" class="btn btn-gray full">Open Camera</button>
+          <button id="recBtn" class="btn btn-green full" disabled>Start Recording</button>
+        </div>
+        <button id="submitBtn" class="btn btn-red full" style="margin-top:6px" disabled>Stop &amp; Submit Verification</button>
+
+        <div class="card" style="margin-top:10px">
+          <h3><span>Or upload a video file</span></h3>
+          <input type="file" id="uploadVideo" accept=".mp4,.webm,.avi,.mov,video/*" />
+          <button id="uploadSubmitBtn" class="btn btn-blue full" disabled>Submit Uploaded Video</button>
+        </div>
+      </div>
+
+      <!-- RIGHT — challenge + ASR + result -->
+      <div>
+        <!-- challenge text -->
+        <div class="challenge-box" id="challengeBox">
+          <div class="label">Challenge — Read Aloud</div>
+          <div class="otp" id="otpText">— — — — — —</div>
+          <div class="hint" id="otpHint">Start a KYC session to get a challenge</div>
+          <div class="countdown" id="countdown"></div>
+        </div>
+
+        <!-- ASR live -->
+        <div class="asr-box">
+          <div class="asr-label">Live transcript (Sherpa VI)</div>
+          <div class="asr-text" id="asrText">…</div>
+        </div>
+
+        <!-- verification result -->
+        <div class="card">
+          <h3>
+            <span>Verification Result</span>
+            <span id="verifyBadge" class="badge info">Waiting</span>
+          </h3>
+          <div id="scoreGrid" class="score-grid"></div>
+          <div id="verifyDetail" class="result" style="min-height:48px">Submit a recording or video to see results.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB — SHERPA VI ASR (offline upload)
+     ═══════════════════════════════════════════════ -->
+<div id="tab-sherpa" class="tab-panel">
+  <div class="card" style="max-width:640px">
+    <h3>
+      <span>Vietnamese ASR (sherpa-onnx)</span>
+      <span id="sherpaBadge" class="badge info">Upload a file</span>
+    </h3>
+    <p style="margin:0 0 10px;font-size:13px;color:var(--muted)">
+      Offline Zipformer model. WAV / FLAC / MP3 / WebM / OGG supported (ffmpeg via librosa).
+      Model path: <code style="font-size:12px">sherpa/sherpa-onnx-zipformer-vi-30M-int8-2026-02-09</code> or env <code>SHERPA_MODEL_DIR</code>.
+    </p>
+    <label>Audio file</label>
+    <input type="file" id="sherpaFile" accept="audio/*,.wav,.webm,.mp3,.flac,.ogg,.m4a" />
+    <button type="button" id="sherpaBtn" class="btn btn-blue full">Transcribe</button>
+    <div id="sherpaResult" class="result" style="margin-top:12px;min-height:56px">Result appears here.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 3 — HISTORY
+     ═══════════════════════════════════════════════ -->
+<div id="tab-history" class="tab-panel">
+  <div class="card">
+    <div class="hist-toolbar">
+      <h3 style="margin:0">Test History</h3>
+      <button id="clearHistBtn" class="btn btn-gray btn-sm">Clear</button>
+    </div>
+    <div id="histList" class="hist-list"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPT
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+/* ── helpers ── */
+const HKEY = "vkyc_hist_v2";
+const MAX_H = 50;
+const now = () => new Date().toLocaleString();
+const $ = (s) => document.getElementById(s);
+const badge = (el, txt, cls) => { el.className = "badge " + cls; el.textContent = txt; };
+
+async function postJson(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || "HTTP " + r.status);
+  return d;
+}
+async function postForm(url, fd) {
+  const r = await fetch(url, { method: "POST", body: fd });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || "HTTP " + r.status);
+  return d;
+}
+
+/* ── history ── */
+function getHist() { try { return JSON.parse(localStorage.getItem(HKEY) || "[]"); } catch { return []; } }
+function saveHist(a) { localStorage.setItem(HKEY, JSON.stringify(a.slice(0, MAX_H))); }
+function addHist(e) { const a = getHist(); a.unshift(e); saveHist(a); renderHist(); }
+function renderHist() {
+  const items = getHist();
+  const el = $("histList");
+  if (!items.length) { el.innerHTML = '<div class="hist-empty">No tests yet.</div>'; return; }
+  el.innerHTML = items.map(i => {
+    const bc = i.status === "pass" ? "ok" : i.status === "fail" ? "fail" : "warn";
+    return `<div class="hist-item"><div class="hist-head"><strong>${i.action}</strong><span class="badge ${bc}">${i.status.toUpperCase()}</span></div><div>${i.summary}</div><div class="hist-meta">${i.time}</div></div>`;
+  }).join("");
+}
+$("clearHistBtn").onclick = () => { saveHist([]); renderHist(); };
+
+/* ── tabs ── */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    $("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* ── API status ── */
+async function checkApi() {
+  try {
+    const r = await fetch("/api/v1/health");
+    if (!r.ok) throw 0;
+    const h = await r.json().catch(() => ({}));
+    const sh = h.sherpa_vi_asr ? " · Sherpa VI" : "";
+    badge($("apiStatus"), "API: online" + sh, h.sherpa_vi_asr ? "ok" : "warn");
+  } catch { badge($("apiStatus"), "API: offline", "fail"); }
+}
+
+/* ═══════════════ SHERPA VI ASR (REST) ═══════════════ */
+$("sherpaBtn").addEventListener("click", async () => {
+  const input = $("sherpaFile");
+  const f = input.files && input.files[0];
+  if (!f) {
+    $("sherpaResult").textContent = "Please choose an audio file.";
+    badge($("sherpaBadge"), "No file", "warn");
+    return;
+  }
+  $("sherpaBtn").disabled = true;
+  badge($("sherpaBadge"), "Running…", "warn");
+  $("sherpaResult").textContent = "Transcribing…";
+  const fd = new FormData();
+  fd.append("file", f, f.name);
+  try {
+    const r = await fetch("/api/v1/asr/vi/transcribe", { method: "POST", body: fd });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const msg = typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail || d);
+      throw new Error(msg || "HTTP " + r.status);
+    }
+    $("sherpaResult").textContent = d.text || "(empty)";
+    badge($("sherpaBadge"), "Done", "ok");
+    addHist({ action: "Sherpa ASR", status: "pass", summary: (d.text || "").slice(0, 120), time: now() });
+  } catch (err) {
+    $("sherpaResult").textContent = "ERROR\n" + err.message;
+    badge($("sherpaBadge"), "FAIL", "fail");
+    addHist({ action: "Sherpa ASR", status: "fail", summary: err.message, time: now() });
+  } finally {
+    $("sherpaBtn").disabled = false;
+  }
+});
+
+/* ═══════════════ REGISTER ═══════════════ */
+$("regForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("regResult").textContent = "Registering…";
+  badge($("regBadge"), "Running", "warn");
+  $("regBtn").disabled = true;
+  const t0 = Date.now();
+  try {
+    const d = await postForm("/api/v1/register", new FormData($("regForm")));
+    $("regResult").textContent = JSON.stringify(d, null, 2);
+    badge($("regBadge"), "PASS", "ok");
+    addHist({ action: "Register", status: "pass", summary: `User ${d.username || "?"} registered (${Date.now()-t0} ms)`, time: now() });
+  } catch (err) {
+    $("regResult").textContent = "ERROR\n" + err.message;
+    badge($("regBadge"), "FAIL", "fail");
+    addHist({ action: "Register", status: "fail", summary: err.message, time: now() });
+  } finally { $("regBtn").disabled = false; }
+});
+
+/* ═══════════════ LIVE KYC ═══════════════ */
+let kycSessionId = null;
+let kycChallengeText = "";
+let kycExpiresAt = 0;
+let countdownTimer = null;
+let mediaStream = null;
+let mediaRecorder = null;
+let audioRecorder = null;
+let videoChunks = [];
+let audioChunks = [];
+let asrSocket = null;
+let recSeconds = 0;
+let recInterval = null;
+
+/* Step 1 — create challenge */
+$("kycStartBtn").addEventListener("click", async () => {
+  const username = $("kycUser").value.trim();
+  if (!username) { alert("Enter a username"); return; }
+  $("kycStartBtn").disabled = true;
+  $("kycStartResult").textContent = "Creating challenge…";
+  try {
+    const pw = ($("kycPass") && $("kycPass").value) ? $("kycPass").value : null;
+    const d = await postJson("/api/v1/challenge/create", { username, password: pw || null });
+    kycSessionId = d.session_id;
+    kycChallengeText = d.challenge_text;
+    kycExpiresAt = Date.now() + d.expires_in_seconds * 1000;
+
+    $("kycStartResult").textContent = JSON.stringify(d, null, 2);
+    $("otpText").textContent = kycChallengeText;
+    $("otpHint").textContent = "Read this aloud during recording";
+    startCountdown(d.expires_in_seconds);
+    $("kycMain").style.display = "";
+    addHist({ action: "Challenge", status: "pass", summary: `Session ${d.session_id} (${d.expires_in_seconds}s)`, time: now() });
+  } catch (err) {
+    $("kycStartResult").textContent = "ERROR\n" + err.message;
+    addHist({ action: "Challenge", status: "fail", summary: err.message, time: now() });
+  } finally { $("kycStartBtn").disabled = false; }
+});
+
+function startCountdown(sec) {
+  if (countdownTimer) clearInterval(countdownTimer);
+  let left = sec;
+  const tick = () => {
+    if (left <= 0) { $("countdown").textContent = "Session expired!"; clearInterval(countdownTimer); return; }
+    $("countdown").textContent = `Expires in ${left}s`;
+    left--;
+  };
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+/* Open camera */
+$("openCamBtn").addEventListener("click", async () => {
+  try {
+    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); }
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+      audio: true
+    });
+    const vid = $("camVideo");
+    vid.srcObject = mediaStream;
+    vid.style.display = "block";
+    $("camPlaceholder").style.display = "none";
+    $("recBtn").disabled = false;
+    $("openCamBtn").textContent = "Restart Camera";
+    startMouthOverlay();
+  } catch (err) {
+    alert("Camera/mic error: " + err.message);
+  }
+});
+
+/* ---- live mouth-landmark overlay ----
+   Shows the user that their mouth is tracked and counts mouth openings, which
+   should match the number of digits in the challenge (each Vietnamese digit is
+   one syllable). It does NOT judge WHICH digit was said: the visual digit
+   classifier is far too weak for that (~22% macro accuracy), so the content
+   check stays with the ASR, which is already a hard gate server-side. */
+let mouthOverlay = null;
+async function startMouthOverlay() {
+  const note = $("mouthNote");
+  $("mouthPanel").style.display = "";
+  try {
+    if (!mouthOverlay) {
+      const mod = await import("/static/mouth_overlay.js");
+      mouthOverlay = new mod.MouthOverlay($("camVideo"), $("camOverlay"), {
+        onUpdate: (s) => {
+          const st = $("mouthState");
+          if (!s.face) { badge(st, "no face", "fail"); $("opennessBar").style.width = "0%"; return; }
+          badge(st, s.open ? "speaking" : "tracking", s.open ? "ok" : "info");
+          $("opennessBar").style.width = Math.min(100, (s.openness / 0.35) * 100) + "%";
+          $("syllCount").textContent = s.syllables;
+          if (s.faceRatio && s.faceRatio < 0.12) note.textContent = "Move closer to the camera.";
+          else note.textContent = "";
+        }
+      });
+      await mouthOverlay.init();
+    }
+    mouthOverlay.start();
+    badge($("mouthState"), "tracking", "info");
+  } catch (err) {
+    $("mouthPanel").style.display = "";
+    badge($("mouthState"), "unavailable", "warn");
+    note.textContent = "Landmark overlay could not load (" + (err.message || err) +
+      "). Verification still works — it does not depend on this overlay.";
+  }
+}
+
+/* Start recording */
+$("recBtn").addEventListener("click", () => {
+  if (!mediaStream) { alert("Open camera first"); return; }
+  if (!kycSessionId) { alert("Create a KYC session first"); return; }
+
+  videoChunks = [];
+  audioChunks = [];
+
+  const mimeVideo = MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+    ? "video/webm;codecs=vp8,opus" : "video/webm";
+  mediaRecorder = new MediaRecorder(mediaStream, { mimeType: mimeVideo });
+  mediaRecorder.ondataavailable = e => { if (e.data.size) videoChunks.push(e.data); };
+  mediaRecorder.start(1000);
+
+  const audioStream = new MediaStream(mediaStream.getAudioTracks());
+  const mimeAudio = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+    ? "audio/webm;codecs=opus" : "audio/webm";
+  audioRecorder = new MediaRecorder(audioStream, { mimeType: mimeAudio });
+  audioRecorder.ondataavailable = e => {
+    if (e.data.size && asrSocket && asrSocket.readyState === WebSocket.OPEN) {
+      e.data.arrayBuffer().then(buf => asrSocket.send(buf));
+    }
+  };
+  audioRecorder.start(3000);
+
+  openAsrSocket();
+
+  if (mouthOverlay) { mouthOverlay.reset(); $("syllCount").textContent = "0"; }
+  const nDigits = (kycChallengeText || "").split(/\s+/).filter(Boolean).length;
+  $("syllExpect").textContent = nDigits ? ` / ${nDigits} expected` : "";
+  $("recDot").classList.add("on");
+  $("recTimer").classList.add("on");
+  recSeconds = 0;
+  recInterval = setInterval(() => {
+    recSeconds++;
+    const m = String(Math.floor(recSeconds / 60)).padStart(2, "0");
+    const s = String(recSeconds % 60).padStart(2, "0");
+    $("recTimer").textContent = m + ":" + s;
+  }, 1000);
+
+  $("recBtn").disabled = true;
+  $("openCamBtn").disabled = true;
+  $("submitBtn").disabled = false;
+  badge($("verifyBadge"), "Recording…", "warn");
+  $("verifyDetail").textContent = "Recording… click Stop & Submit when done.";
+});
+
+function openAsrSocket() {
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  asrSocket = new WebSocket(`${proto}://${location.host}/ws/asr`);
+  asrSocket.onmessage = e => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.error) {
+        $("asrText").textContent = "(Sherpa: " + d.error + ")";
+      } else {
+        $("asrText").textContent = d.text || "…";
+      }
+    } catch {}
+  };
+  asrSocket.onerror = () => { $("asrText").textContent = "(WebSocket error)"; };
+}
+
+/* Stop & submit */
+$("submitBtn").addEventListener("click", async () => {
+  $("submitBtn").disabled = true;
+  stopRecording();
+  badge($("verifyBadge"), "Verifying…", "warn");
+  $("verifyDetail").textContent = "Uploading video and running full pipeline…\nThis may take 20-90 seconds.";
+  const t0 = Date.now();
+
+  try {
+    const videoBlob = new Blob(videoChunks, { type: "video/webm" });
+    const fd = new FormData();
+    fd.append("session_id", kycSessionId);
+    fd.append("video", videoBlob, "kyc_recording.webm");
+
+    const d = await postForm("/api/v1/verify", fd);
+    showVerifyResult(d, Date.now() - t0);
+  } catch (err) {
+    badge($("verifyBadge"), "ERROR", "fail");
+    $("verifyDetail").textContent = "ERROR\n" + err.message;
+    $("scoreGrid").innerHTML = "";
+    addHist({ action: "Verify", status: "fail", summary: err.message, time: now() });
+  } finally {
+    $("recBtn").disabled = false;
+    $("openCamBtn").disabled = false;
+  }
+});
+
+/* Upload video file submit */
+$("uploadVideo").addEventListener("change", () => {
+  $("uploadSubmitBtn").disabled = !$("uploadVideo").files.length;
+});
+$("uploadSubmitBtn").addEventListener("click", async () => {
+  if (!kycSessionId) { alert("Create a KYC session first"); return; }
+  const file = $("uploadVideo").files[0];
+  if (!file) return;
+  $("uploadSubmitBtn").disabled = true;
+  badge($("verifyBadge"), "Verifying…", "warn");
+  $("verifyDetail").textContent = "Uploading and running pipeline…\nThis may take 20-90 seconds.";
+  const t0 = Date.now();
+  try {
+    const fd = new FormData();
+    fd.append("session_id", kycSessionId);
+    fd.append("video", file);
+    const d = await postForm("/api/v1/verify", fd);
+    showVerifyResult(d, Date.now() - t0);
+  } catch (err) {
+    badge($("verifyBadge"), "ERROR", "fail");
+    $("verifyDetail").textContent = "ERROR\n" + err.message;
+    $("scoreGrid").innerHTML = "";
+    addHist({ action: "Verify (upload)", status: "fail", summary: err.message, time: now() });
+  } finally { $("uploadSubmitBtn").disabled = false; }
+});
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+  if (audioRecorder && audioRecorder.state !== "inactive") audioRecorder.stop();
+  if (asrSocket) { try { asrSocket.close(); } catch {} asrSocket = null; }
+  if (recInterval) { clearInterval(recInterval); recInterval = null; }
+  $("recDot").classList.remove("on");
+  $("recTimer").classList.remove("on");
+}
+
+function showVerifyResult(d, elapsed) {
+  const ok = d.verified;
+  badge($("verifyBadge"), ok ? "VERIFIED" : "REJECTED", ok ? "ok" : "fail");
+
+  const scores = d.scores || {};
+  const scoreNames = {
+    asv_score: "Speaker (ASV)",
+    cm_score: "Anti-Spoof (CM)",
+    audio_quality_score: "Audio Quality",
+    replay_score: "Replay Detect",
+    ai_voice_score: "AI Voice Detect",
+    liveness_score: "Face Liveness",
+    lipsync_score: "Lip Sync (SyncNet)",
+    viseme_match_score: "Mouth vs OTP",
+    challenge_match_score: "OTP Match",
+    fusion_score: "Final Fusion"
+  };
+  let html = "";
+  for (const [key, label] of Object.entries(scoreNames)) {
+    const v = scores[key];
+    if (v == null) continue;
+    const pct = Math.round(Math.min(1, Math.max(0, v)) * 100);
+    const color = pct >= 70 ? "#16a34a" : pct >= 40 ? "#ca8a04" : "#dc2626";
+    html += `<div class="score-item"><div class="sname">${label}</div><div class="sval" style="color:${color}">${v.toFixed(3)}</div><div class="sbar"><div class="sfill" style="width:${pct}%;background:${color}"></div></div></div>`;
+  }
+  $("scoreGrid").innerHTML = html;
+
+  let detail = ok ? "Decision: VERIFIED" : "Decision: REJECTED";
+  if (d.rejection_reason) detail += "\nReason: " + d.rejection_reason;
+  detail += "\nElapsed: " + elapsed + " ms\n\n" + JSON.stringify(d, null, 2);
+  $("verifyDetail").textContent = detail;
+
+  addHist({
+    action: "Verify",
+    status: ok ? "pass" : "fail",
+    summary: (ok ? "Verified" : "Rejected") + ` (${elapsed} ms)` + (d.rejection_reason ? " — " + d.rejection_reason : ""),
+    time: now()
+  });
+}
+
+/* ── browser compat check ── */
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+  $("camPlaceholder").textContent = "Your browser doesn't support camera/mic recording.\nPlease use Chrome or Firefox, or upload a video file below.";
+  $("openCamBtn").disabled = true;
+  $("recBtn").disabled = true;
+}
+
+/* ── init ── */
+checkApi();
+renderHist();
+</script>
+</body>
+</html>

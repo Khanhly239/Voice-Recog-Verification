@@ -1,0 +1,32 @@
+{
+  "checkpoint_epoch": 30,
+  "n_speaker_test": 74,
+  "operating_points": {
+    "EER": {
+      "threshold": 0.2208,
+      "FAR_pct": 5.115,
+      "FRR_pct": 5.112,
+      "ghi_chu": "can bang FAR=FRR"
+    },
+    "FAR<=5%": {
+      "threshold": 0.2228,
+      "FAR_pct": 4.999,
+      "FRR_pct": 5.112,
+      "ghi_chu": "uu tien an ninh (KYC)"
+    },
+    "FAR<=1%": {
+      "threshold": 0.3602,
+      "FAR_pct": 0.999,
+      "FRR_pct": 10.756,
+      "ghi_chu": "uu tien an ninh (KYC)"
+    },
+    "FAR<=0.1%": {
+      "threshold": 0.5488,
+      "FAR_pct": 0.099,
+      "FRR_pct": 28.115,
+      "ghi_chu": "uu tien an ninh (KYC)"
+    }
+  },
+  "eer_pct": 5.113,
+  "khuyen_nghi": "KYC nen dung nguong tai FAR<=1% (hoac 0.1% neu rui ro cao); nguong EER chi de bao cao, khong phai de trien khai."
+}

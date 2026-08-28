@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Xác thực giọng nói (Voice-only)</title>
+<style>
+:root{
+  --bg:#f3f5f9;--card:#fff;--line:#e2e5ec;--text:#111827;--muted:#6b7280;
+  --blue:#2563eb;--green:#15803d;--red:#b91c1c;--yellow:#a16207;
+  --dark:#0c1222;--dtext:#dbeafe;
+}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+.wrap{max-width:720px;margin:0 auto;padding:14px 18px}
+h1{margin:0;font-size:22px}
+p.muted{color:var(--muted);font-size:13px;margin:4px 0 14px}
+a{color:var(--blue);text-decoration:none;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:15px}
+label{display:block;margin-top:8px;font-weight:600;font-size:13px}
+input[type=text],input[type=password],select{width:100%;padding:9px 10px;margin-top:4px;border-radius:8px;border:1px solid #d1d5db;font-size:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{display:inline-block;padding:10px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-gray{background:#475569;color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.full{width:100%;margin-top:10px}
+.result{margin-top:12px;background:var(--dark);color:var(--dtext);padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-word;min-height:40px;font-size:12px;font-family:Consolas,monospace}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;margin-left:6px}
+.badge.ok{background:#e8f7ee;color:var(--green)}
+.badge.fail{background:#fdecec;color:var(--red)}
+.badge.warn{background:#fff7e6;color:var(--yellow)}
+.badge.info{background:#eaf2ff;color:#1d4ed8}
+.challenge-box{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;border-radius:12px;padding:20px;text-align:center;margin-bottom:12px}
+.challenge-box .label{font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:6px}
+.challenge-box .text{font-size:22px;font-weight:800;margin:8px 0;line-height:1.3}
+.challenge-box .hint{font-size:13px;opacity:.8;margin-top:4px}
+.countdown{font-size:13px;color:#fde68a;font-weight:600;margin-top:6px}
+.rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:6px;animation:pulse 1s infinite;visibility:hidden}
+.rec-dot.on{visibility:visible}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.score-item{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.score-item .sname{font-size:11px;color:var(--muted);text-transform:uppercase}
+.score-item .sval{font-size:16px;font-weight:700;margin-top:2px}
+.notice{font-size:12px;color:var(--muted);background:#f8fafc;border:1px dashed var(--line);border-radius:8px;padding:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Xác thực giọng nói</h1>
+  <p class="muted">
+    Challenge-response chỉ bằng giọng nói (không cần camera). Hệ thống đưa ra một câu nói/dãy số ngẫu nhiên,
+    bạn phải <strong>đọc trực tiếp qua micro</strong> — trang này không có tùy chọn tải file lên.
+    Chưa đăng ký giọng nói? Vào <a href="/">Dashboard</a> để đăng ký trước.
+  </p>
+
+  <!-- Step 1: username + challenge type -->
+  <div class="card" id="step1">
+    <h3>Bước 1 — Nhập tài khoản &amp; lấy câu thử</h3>
+    <div class="row2">
+      <div>
+        <label>Username đã đăng ký</label>
+        <input type="text" id="username" placeholder="vd: lily01" required />
+      </div>
+      <div>
+        <label>Mật khẩu (nếu tài khoản có)</label>
+        <input type="password" id="password" autocomplete="current-password" />
+      </div>
+    </div>
+    <label>Loại challenge</label>
+    <select id="challengeType">
+      <option value="random" selected>Ngẫu nhiên (số hoặc câu)</option>
+      <option value="digits">Chỉ dãy số</option>
+      <option value="sentence">Chỉ câu tự do</option>
+    </select>
+    <button id="startBtn" class="btn-blue full">Lấy câu thử</button>
+    <div id="startResult" class="result">Nhập username và bấm "Lấy câu thử".</div>
+  </div>
+
+  <!-- Step 2: challenge + record -->
+  <div class="card" id="step2" style="display:none">
+    <h3>Bước 2 — Đọc to câu dưới đây</h3>
+    <div class="challenge-box">
+      <div class="label">Challenge — đọc trực tiếp</div>
+      <div class="text" id="challengeText">—</div>
+      <div class="hint" id="challengeHint"></div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+    <button id="micBtn" class="btn-gray full">Bật micro</button>
+    <button id="recBtn" class="full" style="margin-top:8px" disabled>
+      <span class="rec-dot" id="recDot"></span>
+      <span id="recBtnLabel">Bắt đầu ghi âm</span>
+    </button>
+    <div class="notice">
+      Không có tùy chọn chọn file — chỉ chấp nhận âm thanh ghi trực tiếp từ micro trong phiên này.
+      Hệ thống còn dùng bộ phát hiện phát-lại (replay) và giọng AI/TTS ở backend để chặn thêm các file giả mạo.
+    </div>
+  </div>
+
+  <!-- Step 3: result -->
+  <div class="card" id="step3" style="display:none">
+    <h3>Kết quả <span id="verifyBadge" class="badge info">Đang chờ</span></h3>
+    <div id="scoreGrid" class="score-grid"></div>
+    <div id="verifyDetail" class="result">—</div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+let sessionId = null;
+let expiresAt = 0;
+let countdownTimer = null;
+let micStream = null;
+let recorder = null;
+let chunks = [];
+let recording = false;
+
+function badge(el, txt, cls) { el.className = "badge " + cls; el.textContent = txt; }
+
+async function postJson(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || "HTTP " + r.status);
+  return d;
+}
+async function postForm(url, fd) {
+  const r = await fetch(url, { method: "POST", body: fd });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || "HTTP " + r.status);
+  return d;
+}
+
+function startCountdown(sec) {
+  if (countdownTimer) clearInterval(countdownTimer);
+  let left = sec;
+  const tick = () => {
+    if (left <= 0) { $("countdown").textContent = "Phiên đã hết hạn — lấy câu thử mới."; clearInterval(countdownTimer); return; }
+    $("countdown").textContent = `Hết hạn sau ${left}s`;
+    left--;
+  };
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+$("startBtn").addEventListener("click", async () => {
+  const username = $("username").value.trim();
+  if (!username) { alert("Nhập username"); return; }
+  $("startBtn").disabled = true;
+  $("startResult").textContent = "Đang tạo phiên...";
+  try {
+    const password = $("password").value || null;
+    const challenge_type = $("challengeType").value;
+    const d = await postJson("/api/v1/challenge/create", { username, password, challenge_type });
+    sessionId = d.session_id;
+    expiresAt = Date.now() + d.expires_in_seconds * 1000;
+
+    $("startResult").textContent = JSON.stringify(d, null, 2);
+    $("challengeText").textContent = d.challenge_text;
+    $("challengeHint").textContent = d.challenge_type === "digits"
+      ? "Đọc từng số một, ví dụ: ba tám năm..."
+      : "Đọc nguyên câu, phát âm rõ ràng.";
+    startCountdown(d.expires_in_seconds);
+    $("step2").style.display = "";
+    $("step3").style.display = "none";
+  } catch (err) {
+    $("startResult").textContent = "Lỗi: " + err.message;
+  } finally {
+    $("startBtn").disabled = false;
+  }
+});
+
+$("micBtn").addEventListener("click", async () => {
+  try {
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    $("recBtn").disabled = false;
+    $("micBtn").textContent = "Khởi động lại micro";
+  } catch (err) {
+    alert("Không truy cập được micro: " + err.message);
+  }
+});
+
+$("recBtn").addEventListener("click", () => {
+  if (!sessionId) { alert("Lấy câu thử trước"); return; }
+  if (!micStream) { alert("Bật micro trước"); return; }
+
+  if (!recording) {
+    chunks = [];
+    const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm";
+    recorder = new MediaRecorder(micStream, { mimeType: mime });
+    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+    recorder.onstop = submitRecording;
+    recorder.start();
+
+    recording = true;
+    $("recDot").classList.add("on");
+    $("recBtnLabel").textContent = "Dừng & gửi để xác thực";
+    $("micBtn").disabled = true;
+  } else {
+    recorder.stop();
+    recording = false;
+    $("recDot").classList.remove("on");
+    $("recBtnLabel").textContent = "Bắt đầu ghi âm";
+    $("recBtn").disabled = true;
+  }
+});
+
+async function submitRecording() {
+  $("step3").style.display = "";
+  badge($("verifyBadge"), "Đang xác thực...", "warn");
+  $("scoreGrid").innerHTML = "";
+  $("verifyDetail").textContent = "Đang tải lên và chạy pipeline...";
+  const t0 = Date.now();
+
+  try {
+    const blob = new Blob(chunks, { type: "audio/webm" });
+    const fd = new FormData();
+    fd.append("session_id", sessionId);
+    fd.append("audio", blob, "voice_recording.webm");
+
+    const d = await postForm("/api/v1/verify/voice", fd);
+    showResult(d, Date.now() - t0);
+  } catch (err) {
+    badge($("verifyBadge"), "LỖI", "fail");
+    $("verifyDetail").textContent = "LỖI\n" + err.message;
+  } finally {
+    $("micBtn").disabled = false;
+    $("recBtn").disabled = false;
+  }
+}
+
+function showResult(d, elapsed) {
+  const ok = d.verified;
+  badge($("verifyBadge"), ok ? "ĐÃ XÁC THỰC" : "TỪ CHỐI", ok ? "ok" : "fail");
+
+  const scores = d.scores || {};
+  const names = {
+    challenge_match_score: "Khớp câu đọc",
+    asv_score: "Giọng nói (ASV)",
+    cm_score: "Chống giả mạo (CM)",
+    audio_quality_score: "Chất lượng âm",
+    replay_score: "Chống phát lại",
+    ai_voice_score: "Chống AI-voice",
+    fusion_score: "Điểm tổng hợp",
+  };
+  let html = "";
+  for (const [key, label] of Object.entries(names)) {
+    const v = scores[key];
+    if (v == null) continue;
+    const pct = Math.round(Math.min(1, Math.max(0, v)) * 100);
+    const color = pct >= 70 ? "#16a34a" : pct >= 40 ? "#ca8a04" : "#dc2626";
+    html += `<div class="score-item"><div class="sname">${label}</div><div class="sval" style="color:${color}">${v.toFixed(3)}</div></div>`;
+  }
+  $("scoreGrid").innerHTML = html;
+
+  let detail = ok ? "Kết quả: ĐÃ XÁC THỰC" : "Kết quả: TỪ CHỐI";
+  if (d.rejection_reason) detail += "\nLý do: " + d.rejection_reason;
+  detail += "\nThời gian: " + elapsed + " ms\n\n" + JSON.stringify(d, null, 2);
+  $("verifyDetail").textContent = detail;
+}
+
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+  $("micBtn").disabled = true;
+  $("micBtn").textContent = "Trình duyệt không hỗ trợ ghi âm";
+}
+</script>
+</body>
+</html>

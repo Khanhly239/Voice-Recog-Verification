@@ -1,0 +1,10 @@
+# Phiên bản đã kiểm chứng chạy được (Python 3.10, Windows + CUDA 12.6)
+torch>=2.2,<3
+torchaudio>=2.2,<3
+# speechbrain KHONG con can -- code da vendored trong _sb_vendored.py
+# (chi can neu muon chay verify_vendored.py de doi chieu)
+numpy>=1.24
+soundfile>=0.12          # torchaudio backend đọc/ghi wav, mp3, flac
+
+# GPU (tùy chọn): cài torch theo hướng dẫn tại https://pytorch.org/get-started/locally/
+# CPU cũng chạy được, khoảng 0,3 giây mỗi utterance.

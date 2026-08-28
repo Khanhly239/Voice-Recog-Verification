@@ -1,0 +1,20 @@
+﻿model,toolkit,so_tham_so,top1_pct,top5_pct,eer_pct,n_gallery,n_queries,giay,ghi_chu
+WeSpeaker ResNet34,WeSpeaker,6.63M,85.2,90.37,7.86,146,1838,106,
+WeSpeaker ResNet34-LM,WeSpeaker,6.63M,83.13,89.72,8.34,146,1838,100,
+WeSpeaker ResNet293-LM,WeSpeaker,28.6M,84.55,89.88,8.26,146,1838,738,
+WeSpeaker CAM++-LM,WeSpeaker,7.18M,85.75,90.42,8.41,146,1838,232,num_frms=600 (config goc)
+WeSpeaker SimAM_ResNet34,WeSpeaker,25.2M,82.81,89.45,9.3,146,1838,316,pretrain VoxBlink2
+WeSpeaker ReDimNet2-B6-LM,WeSpeaker,12.4M,84,90.48,8.67,146,1838,519,"TFMel frontend, clip 2s"
+SpeechBrain ECAPA-TDNN,SpeechBrain,20.8M,84.39,90.32,7.75,146,1838,321,"spkrec-ecapa-voxceleb, waveform day du"
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+Model,Toolkit,Params,Top-1,Top-5,EER,,,,
+CAM++-LM,WeSpeaker,"7,18M","85,75%","90,42%","8,41%",,,,
+ResNet34,WeSpeaker,"6,63M","85,20%","90,37%","7,86%",,,,
+ReDimNet2-B6-LM,WeSpeaker,"12,4M","84,00%","90,48%","8,67%",,,,
+ECAPA-TDNN,SpeechBrain,"20,8M","84,39%","90,32%","7,75%",,,,
+ResNet293-LM,WeSpeaker,"28,6M","84,55%","89,88%","8,26%",,,,
+ResNet34-LM,WeSpeaker,"6,63M","83,13%","89,72%","8,34%",,,,
+SimAM_ResNet34,WeSpeaker,"25,2M","82,81%","89,45%","9,30%",,,,

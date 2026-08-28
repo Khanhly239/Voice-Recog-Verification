@@ -1,0 +1,11 @@
+﻿lan_thu,mo_ta,epoch_ckpt,top1_pct,top5_pct,eer_pct,n_gallery,n_queries,ghi_chu
+goc,ResNet34 goc VoxCeleb (zero-shot),,85.2,90.37,7.86,146,1838,
+goc-LM,ResNet34-LM goc (zero-shot),,83.13,89.72,8.34,146,1838,
+v1,ResNet34 + VIVOS 46 spk,,65.72,82.48,10.91,146,1838,
+v3,ResNet34 + VoxVietnam 91 spk,4,84.77,90.04,7.67,146,1838,
+v4,ResNet34 + VoxVietnam 413 spk,5,86.94,91.84,6.57,146,1838,
+v5,ResNet34 + VoxVietnam 814 spk,12,87.81,92.55,5.94,146,1838,
+v6,ResNet34-LM + VoxVietnam 954 spk,17,87.87,92.55,6.03,146,1838,
+v7,ResNet293-LM + VoxVietnam 954 spk,4,87.76,92.76,5.76,146,1838,
+v8,ResNet34-LM + Gaussian + CosFace + VI/EN,37,88.14,92.82,6.09,146,1838,
+v9,ResNet34-LM + MUSAN/RIRS + CosFace + VI/EN,2,86.07,90.37,8.14,146,1838,

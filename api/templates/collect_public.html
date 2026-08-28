@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Góp giọng nói &amp; khẩu hình tiếng Việt</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#182337;--card2:#1f2c44;--line:#2c3a54;
+  --text:#e8eefc;--muted:#93a2c0;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:21px;margin:0 0 6px;line-height:1.3}
+h2{font-size:16px;margin:0 0 10px}
+p{margin:8px 0}
+.muted{color:var(--muted);font-size:13.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card.tight{padding:12px}
+button{font-family:inherit;font-size:15px;font-weight:650;border:none;border-radius:11px;padding:13px 18px;cursor:pointer;transition:.15s;width:100%;margin-top:10px}
+button:active{transform:scale(.985)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.b-blue{background:var(--blue);color:#fff}
+.b-green{background:var(--green);color:#04220f}
+.b-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.b-red{background:transparent;color:#fca5a5;border:1px solid #6b2b2b}
+.row{display:flex;gap:8px}.row>button{margin-top:10px}
+label.fld{display:block;margin-top:12px;font-size:13px;font-weight:650;color:var(--muted)}
+select{width:100%;margin-top:5px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;font-family:inherit}
+input[type=text]{width:100%;margin-top:5px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;font-family:inherit}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:13.5px}
+.chk input{width:20px;height:20px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--blue)}
+.notice{background:#1a2740;border-left:3px solid var(--blue);border-radius:8px;padding:10px 12px;font-size:13px;color:#c7d6f5}
+.notice.warn{background:#33260f;border-left-color:var(--amber);color:#f8dfae}
+.notice.bad{background:#3a1a1a;border-left-color:var(--red);color:#fbc9c9}
+ul{margin:8px 0;padding-left:20px;font-size:13.5px;color:#c7d6f5}li{margin:4px 0}
+.screen{display:none}.screen.on{display:block}
+
+/* camera */
+.cam{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:3/4;max-height:52vh;margin:0 auto}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.guide{position:absolute;inset:0;pointer-events:none}
+.guide .oval{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:60%;height:66%;border:2px dashed rgba(255,255,255,.45);border-radius:50%/42%}
+.guide .mouth{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);width:34%;height:11%;border:2px solid rgba(59,130,246,.85);border-radius:14px}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:76px;font-weight:800;color:#fff;background:rgba(0,0,0,.45);text-shadow:0 2px 12px #000}
+.overlay.hide{display:none}
+.recbar{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.15)}
+.recbar i{display:block;height:100%;width:0;background:var(--red);transition:width .1s linear}
+.reclabel{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;display:none;align-items:center;gap:6px}
+.reclabel.on{display:flex}
+.reclabel .dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* meters */
+.meter{height:7px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;width:0;background:var(--green);transition:width .08s linear}
+
+/* prompt */
+.prompt{background:linear-gradient(140deg,#1d4ed8,#0e7490);border-radius:14px;padding:18px 16px;text-align:center;margin-bottom:12px}
+.prompt .kind{font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.prompt .big{font-size:52px;font-weight:800;line-height:1.05;margin:8px 0 2px;letter-spacing:.02em}
+.prompt .txt{font-size:21px;font-weight:700;margin:8px 0 2px}
+.prompt .hint{font-size:12.5px;opacity:.9;margin-top:8px}
+.pbar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin:4px 0 10px}
+.pbar i{display:block;height:100%;background:var(--blue);transition:width .3s}
+.status{font-size:13px;min-height:20px;margin-top:8px;color:var(--muted)}
+.status.ok{color:#86efac}.status.err{color:#fca5a5}
+
+/* stats */
+.grid10{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.cell{background:var(--card2);border-radius:9px;padding:8px 4px;text-align:center}
+.cell .n{font-size:17px;font-weight:800}.cell .w{font-size:11px;color:var(--muted)}.cell .c{font-size:12px;color:#7dd3fc;font-weight:700}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kpi{background:var(--card2);border-radius:11px;padding:11px 8px;text-align:center}
+.kpi .v{font-size:20px;font-weight:800}.kpi .l{font-size:11px;color:var(--muted);margin-top:2px}
+details{margin-top:10px}summary{cursor:pointer;font-size:13.5px;font-weight:650;color:var(--muted)}
+code{background:var(--card2);padding:2px 6px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══════════════ 1. GIỚI THIỆU + ĐỒNG Ý ══════════════ -->
+<div class="screen on" id="s-intro">
+  <h1>Góp giọng nói &amp; khẩu hình tiếng Việt</h1>
+  <p class="muted">Bạn đọc 10 chữ số rời và 6 dãy số 6 chữ số trước camera (khoảng 3 phút). Dữ liệu dùng để huấn luyện và đánh giá hệ thống xác thực bằng giọng nói và khẩu hình tiếng Việt.</p>
+
+  <div id="envWarn"></div>
+
+  <div class="card">
+    <h2>Chúng tôi thu những gì</h2>
+    <ul>
+      <li>Các đoạn video ngắn (2–6 giây) có <b>hình khuôn mặt và giọng nói</b> của bạn khi đọc <b>các chữ số</b> hiện trên màn hình. Không thu câu nói tự do nào.</li>
+      <li>Thông tin nhóm (không bắt buộc): giới tính, nhóm tuổi, vùng miền — chỉ dùng để kiểm tra dữ liệu có đủ đa dạng.</li>
+      <li><b>Không</b> thu tên, số điện thoại, email, số CCCD hay bất kỳ thông tin định danh nào.</li>
+    </ul>
+    <h2 style="margin-top:14px">Dùng để làm gì</h2>
+    <ul>
+      <li>Huấn luyện mô hình nhận dạng khẩu hình chữ số và mô hình nhận dạng người nói.</li>
+      <li>Đánh giá độ chính xác của hệ thống chống giả mạo (phát lại, giọng AI).</li>
+      <li>Chỉ dùng nội bộ cho mục đích nghiên cứu/phát triển nêu trên; không bán, không chia sẻ cho quảng cáo.</li>
+    </ul>
+    <h2 style="margin-top:14px">Quyền của bạn</h2>
+    <ul>
+      <li>Dừng bất cứ lúc nào; phần đã ghi vẫn được giữ trừ khi bạn yêu cầu xoá.</li>
+      <li>Bạn có quyền yêu cầu xoá <b>toàn bộ</b> dữ liệu của mình bất cứ lúc nào. Hãy gửi <b>mã đóng góp</b> (hiện ở cuối lượt ghi) cho người phụ trách thu thập, dữ liệu của bạn sẽ được xoá.</li>
+      <li>Trình duyệt lưu một mã ngẫu nhiên để nhận ra bạn khi quay lại (giúp gom các lần ghi của cùng một người). Xoá dữ liệu trình duyệt sẽ mất mã này.</li>
+    </ul>
+    <div class="notice" style="margin-top:12px">Giọng nói và hình ảnh khuôn mặt là <b>dữ liệu cá nhân nhạy cảm</b> theo Nghị định 13/2023/NĐ-CP. Vì vậy chúng tôi cần bạn đồng ý rõ ràng bên dưới trước khi bật camera.</div>
+  </div>
+
+  <div class="card">
+    <h2>Thông tin nhóm (không bắt buộc)</h2>
+    <label class="fld" for="gender">Giới tính</label>
+    <select id="gender">
+      <option value="khong_cho_biet">Không muốn cho biết</option>
+      <option value="nam">Nam</option><option value="nu">Nữ</option><option value="khac">Khác</option>
+    </select>
+    <label class="fld" for="ageGroup">Nhóm tuổi</label>
+    <select id="ageGroup">
+      <option value="khong_cho_biet">Không muốn cho biết</option>
+      <option value="18_25">18–25</option><option value="26_35">26–35</option>
+      <option value="36_50">36–50</option><option value="tren_50">Trên 50</option>
+    </select>
+    <label class="fld" for="region">Giọng vùng miền</label>
+    <select id="region">
+      <option value="khong_cho_biet">Không muốn cho biết</option>
+      <option value="bac">Bắc</option><option value="trung">Trung</option>
+      <option value="nam">Nam</option><option value="khac">Khác</option>
+    </select>
+    <div id="codeWrap" style="display:none">
+      <label class="fld" for="accessCode">Mã truy cập</label>
+      <input type="text" id="accessCode" placeholder="Nhập mã được cung cấp" autocomplete="off" />
+    </div>
+
+    <label class="chk"><input type="checkbox" id="cbConsent" />
+      <span>Tôi <b>đồng ý</b> cho ghi lại hình ảnh khuôn mặt và giọng nói của tôi, và cho phép sử dụng dữ liệu này để huấn luyện, đánh giá hệ thống xác thực như mô tả ở trên.</span></label>
+    <label class="chk"><input type="checkbox" id="cbAge" />
+      <span>Tôi đã <b>từ 18 tuổi</b> trở lên.</span></label>
+
+    <button class="b-blue" id="btnStart" disabled>Đồng ý &amp; bật camera</button>
+    <div class="status" id="introStatus"></div>
+  </div>
+
+  <div class="card tight">
+    <h2>Tiến độ chung</h2>
+    <div class="kpis" id="kpisIntro"></div>
+  </div>
+</div>
+
+<!-- ══════════════ 2. KIỂM TRA CAMERA/MIC ══════════════ -->
+<div class="screen" id="s-check">
+  <h1>Kiểm tra trước khi ghi</h1>
+  <p class="muted">Đặt mặt vào khung, <b>miệng nằm trong ô xanh</b>. Ngồi nơi đủ sáng, ánh sáng chiếu từ phía trước (không ngược sáng).</p>
+  <div class="cam">
+    <video id="vid1" autoplay playsinline muted></video>
+    <div class="guide"><div class="oval"></div><div class="mouth"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-size:13px;font-weight:650">Độ sáng <span class="muted" id="lightTxt"></span></div>
+    <div class="meter"><i id="lightBar"></i></div>
+    <div style="font-size:13px;font-weight:650;margin-top:12px">Micro — thử nói “xin chào” <span class="muted" id="micTxt"></span></div>
+    <div class="meter"><i id="micBar"></i></div>
+    <div class="notice" style="margin-top:12px">Mẹo: giữ điện thoại ngang tầm mắt, nói với âm lượng bình thường, tránh nơi ồn và tránh bật loa nhạc.</div>
+    <button class="b-green" id="btnToRecord">Sẵn sàng, bắt đầu ghi</button>
+  </div>
+</div>
+
+<!-- ══════════════ 3. GHI ══════════════ -->
+<div class="screen" id="s-record">
+  <div class="pbar"><i id="pbar"></i></div>
+  <div class="muted" id="progTxt" style="font-size:12.5px;margin-bottom:10px"></div>
+
+  <div class="prompt" id="promptBox">
+    <div class="kind" id="pKind"></div>
+    <div class="big" id="pBig"></div>
+    <div class="txt" id="pTxt"></div>
+    <div class="hint" id="pHint"></div>
+  </div>
+
+  <div class="cam">
+    <video id="vid2" autoplay playsinline muted></video>
+    <div class="guide"><div class="oval"></div><div class="mouth"></div></div>
+    <div class="reclabel" id="recLabel"><span class="dot"></span><span>ĐANG GHI</span></div>
+    <div class="overlay hide" id="cdOverlay"></div>
+    <div class="recbar"><i id="recBar"></i></div>
+  </div>
+
+  <button class="b-green" id="btnRec">Bấm để ghi</button>
+  <div class="row">
+    <button class="b-ghost" id="btnRetake" disabled>Ghi lại clip vừa rồi</button>
+    <button class="b-ghost" id="btnSkip">Bỏ qua</button>
+  </div>
+  <div class="status" id="recStatus"></div>
+  <button class="b-ghost" id="btnFinish" style="margin-top:16px">Kết thúc &amp; xem kết quả</button>
+</div>
+
+<!-- ══════════════ 4. XONG ══════════════ -->
+<div class="screen" id="s-done">
+  <h1>Cảm ơn bạn! 🎉</h1>
+  <p class="muted" id="doneSummary"></p>
+  <div class="card tight">
+    <h2>Mã đóng góp của bạn</h2>
+    <p class="muted" style="font-size:12.5px;margin-top:0">Lưu lại mã này nếu sau đó bạn muốn yêu cầu xoá dữ liệu của mình. Mã không chứa thông tin cá nhân nào.</p>
+    <div id="myCode" style="font-family:Consolas,monospace;font-size:18px;font-weight:800;letter-spacing:.06em;background:var(--card2);border-radius:10px;padding:12px;text-align:center;user-select:all">—</div>
+    <button class="b-ghost" id="btnCopyCode" style="margin-top:8px">Sao chép mã</button>
+  </div>
+
+  <div class="card">
+    <h2>Đóng góp thêm sẽ giúp nhiều hơn</h2>
+    <p class="muted">Ghi thêm một lần nữa <b>vào ngày khác</b> hoặc bằng <b>thiết bị khác</b> là dữ liệu quý nhất — nó giúp hệ thống nhận ra bạn vẫn là bạn dù micro và môi trường thay đổi.</p>
+    <button class="b-blue" id="btnAgain">Ghi thêm một lượt nữa</button>
+  </div>
+  <div class="card tight">
+    <h2>Tiến độ chung</h2>
+    <div class="kpis" id="kpisDone"></div>
+    <div class="grid10" id="gridDone"></div>
+  </div>
+</div>
+
+</div>
+<script>
+"use strict";
+const API = "/api/v1/collect-public";
+const $ = (id) => document.getElementById(id);
+const WORDS = ["không","một","hai","ba","bốn","năm","sáu","bảy","tám","chín"];
+const LS_CID = "vkyc_collect_cid", LS_TOK = "vkyc_collect_tok";
+
+const S = {
+  cid: null, tok: null, sid: null, sessionIndex: 1,
+  tasks: [], idx: 0, stream: null, mime: "", ext: ".webm",
+  lastClipId: null, uploaded: 0, skipped: 0, busy: false, audioCtx: null,
+};
+
+function show(id) {
+  for (const el of document.querySelectorAll(".screen")) el.classList.toggle("on", el.id === id);
+  window.scrollTo(0, 0);
+}
+function setStatus(el, msg, cls) {
+  el.textContent = msg || "";
+  el.className = "status" + (cls ? " " + cls : "");
+}
+
+/* ── môi trường ── */
+// getUserMedia chỉ hoạt động trong secure context. Trên domain public bắt buộc
+// phải có HTTPS, nếu không camera sẽ không bao giờ mở được -> nói rõ ngay từ đầu.
+function checkEnv() {
+  const box = $("envWarn");
+  const localish = ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+  if (!window.isSecureContext && !localish) {
+    box.innerHTML = '<div class="notice bad">Trang đang mở qua <b>HTTP</b> nên trình duyệt sẽ không cho phép bật camera. Hãy mở lại trang bằng địa chỉ <b>https://</b>.</div>';
+    return false;
+  }
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    box.innerHTML = '<div class="notice bad">Trình duyệt này không hỗ trợ ghi hình. Vui lòng dùng Chrome, Safari hoặc Edge bản mới.</div>';
+    return false;
+  }
+  return true;
+}
+function pickMime() {
+  // Safari/iOS chỉ ghi được mp4/h264; Chrome/Firefox ưu tiên webm.
+  const cands = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm",
+                 "video/mp4;codecs=h264,aac", "video/mp4"];
+  for (const m of cands) {
+    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (_) {}
+  }
+  return "";
+}
+
+/* ── consent gate ── */
+function refreshGate() {
+  $("btnStart").disabled = !($("cbConsent").checked && $("cbAge").checked);
+}
+$("cbConsent").onchange = refreshGate;
+$("cbAge").onchange = refreshGate;
+
+/* ── stats ── */
+function renderStats(d, kpiId, gridId) {
+  const kpi = $(kpiId);
+  if (kpi) kpi.innerHTML =
+    `<div class="kpi"><div class="v">${d.contributors}</div><div class="l">người đóng góp</div></div>` +
+    `<div class="kpi"><div class="v">${d.total_clips}</div><div class="l">clip đã thu</div></div>` +
+    `<div class="kpi"><div class="v">${d.repeat_contributors}</div><div class="l">quay lại lần 2+</div></div>`;
+  const g = gridId ? $(gridId) : null;
+  if (g) {
+    g.innerHTML = "";
+    for (let i = 0; i < 10; i++) {
+      const c = document.createElement("div");
+      c.className = "cell";
+      c.innerHTML = `<div class="n">${i}</div><div class="w">${WORDS[i]}</div><div class="c">${d.per_digit[String(i)] || 0}</div>`;
+      g.appendChild(c);
+    }
+  }
+}
+async function loadStats(kpiId, gridId) {
+  try {
+    const r = await fetch(API + "/stats");
+    const d = await r.json();
+    if (d.access_code_required) $("codeWrap").style.display = "block";
+    if (!d.enabled) $("envWarn").innerHTML = '<div class="notice warn">Trang thu dữ liệu đang tạm đóng.</div>';
+    renderStats(d, kpiId, gridId);
+  } catch (_) {}
+}
+
+/* ── bật camera + kiểm tra ── */
+async function openCamera() {
+  // Tắt echoCancellation/noiseSuppression/autoGainControl: các bộ xử lý này của
+  // trình duyệt làm méo đặc trưng phổ của giọng nói, khiến dữ liệu kém giá trị
+  // cho mô hình nhận dạng người nói.
+  const constraints = {
+    video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, min: 20 }, facingMode: "user" },
+    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+             channelCount: 1, sampleRate: 48000 },
+  };
+  try {
+    S.stream = await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (e) {
+    if (e.name === "OverconstrainedError") {
+      S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+    } else { throw e; }
+  }
+  $("vid1").srcObject = S.stream;
+  $("vid2").srcObject = S.stream;
+  S.mime = pickMime();
+  S.ext = S.mime.includes("mp4") ? ".mp4" : ".webm";
+  startMeters();
+}
+
+function startMeters() {
+  // Độ sáng: lấy mẫu thưa từ một frame nhỏ. Ảnh quá tối là nguyên nhân số một
+  // khiến MediaPipe không tìm thấy landmark môi, tức clip trở thành vô dụng.
+  const v = $("vid1"), cv = document.createElement("canvas");
+  cv.width = 64; cv.height = 48;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  setInterval(() => {
+    if (!S.stream || v.readyState < 2 || !$("s-check").classList.contains("on")) return;
+    try {
+      ctx.drawImage(v, 0, 0, cv.width, cv.height);
+      const px = ctx.getImageData(0, 0, cv.width, cv.height).data;
+      let sum = 0, n = 0;
+      for (let i = 0; i < px.length; i += 16) { sum += (px[i] + px[i + 1] + px[i + 2]) / 3; n++; }
+      const lum = sum / Math.max(n, 1);
+      $("lightBar").style.width = Math.min(100, lum / 1.8) + "%";
+      $("lightBar").style.background = lum < 55 ? "var(--red)" : lum < 80 ? "var(--amber)" : "var(--green)";
+      $("lightTxt").textContent = lum < 55 ? "— quá tối, hãy tìm chỗ sáng hơn" : lum < 80 ? "— hơi tối" : "— tốt";
+    } catch (_) {}
+  }, 300);
+
+  try {
+    S.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = S.audioCtx.createMediaStreamSource(S.stream);
+    const an = S.audioCtx.createAnalyser();
+    an.fftSize = 512;
+    src.connect(an);
+    const buf = new Uint8Array(an.fftSize);
+    let peak = 0;
+    setInterval(() => {
+      if (!$("s-check").classList.contains("on")) return;
+      an.getByteTimeDomainData(buf);
+      let m = 0;
+      for (const b of buf) m = Math.max(m, Math.abs(b - 128));
+      const lvl = Math.min(100, (m / 60) * 100);
+      peak = Math.max(peak * 0.97, lvl);
+      $("micBar").style.width = peak + "%";
+      $("micTxt").textContent = peak > 18 ? "— nghe rõ" : "";
+    }, 100);
+  } catch (_) {}
+}
+
+/* ── enroll ── */
+$("btnStart").onclick = async () => {
+  if (!checkEnv()) return;
+  const btn = $("btnStart");
+  btn.disabled = true;
+  setStatus($("introStatus"), "Đang chuẩn bị…");
+  try {
+    const fd = new FormData();
+    fd.append("consent", "true");
+    fd.append("age_confirmed", "true");
+    fd.append("gender", $("gender").value);
+    fd.append("age_group", $("ageGroup").value);
+    fd.append("region", $("region").value);
+    fd.append("access_code", $("accessCode")?.value || "");
+    fd.append("device_note", (navigator.userAgentData?.platform || navigator.platform || "") + " / " +
+                             (screen.width + "x" + screen.height));
+    const savedCid = localStorage.getItem(LS_CID), savedTok = localStorage.getItem(LS_TOK);
+    if (savedCid && savedTok) { fd.append("contributor_id", savedCid); fd.append("token", savedTok); }
+
+    const r = await fetch(API + "/enroll", { method: "POST", body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ("HTTP " + r.status));
+    S.cid = d.contributor_id; S.tok = d.token; S.sid = d.session_id; S.sessionIndex = d.session_index;
+    localStorage.setItem(LS_CID, S.cid);
+    localStorage.setItem(LS_TOK, S.tok);
+
+    const tr = await fetch(`${API}/tasks?session_id=${S.sid}&contributor_id=${S.cid}&token=${encodeURIComponent(S.tok)}`);
+    const td = await tr.json();
+    if (!tr.ok) throw new Error(td.detail || ("HTTP " + tr.status));
+    S.tasks = td.tasks; S.idx = 0; S.uploaded = 0; S.skipped = 0;
+
+    setStatus($("introStatus"), "Đang xin quyền camera & micro…");
+    await openCamera();
+    setStatus($("introStatus"), "");
+    show("s-check");
+  } catch (e) {
+    setStatus($("introStatus"),
+      /Permission|NotAllowed/i.test(e.name + e.message)
+        ? "Bạn đã từ chối quyền camera/micro. Hãy cho phép trong cài đặt trình duyệt rồi thử lại."
+        : "Không bắt đầu được: " + e.message, "err");
+    btn.disabled = false;
+  }
+};
+
+$("btnToRecord").onclick = () => { show("s-record"); renderTask(); };
+
+/* ── vòng ghi ── */
+function renderTask() {
+  const t = S.tasks[S.idx];
+  const done = S.idx;
+  $("pbar").style.width = (done / S.tasks.length * 100) + "%";
+  $("progTxt").textContent = `Nội dung ${Math.min(S.idx + 1, S.tasks.length)}/${S.tasks.length} · đã gửi ${S.uploaded} clip` +
+    (S.sessionIndex > 1 ? ` · lượt đóng góp thứ ${S.sessionIndex}` : "");
+  if (!t) { finish(); return; }
+
+  const kindLabel = { digit: "Chữ số", otp: "Dãy số", sentence: "Câu" }[t.kind] || t.kind;
+  $("pKind").textContent = kindLabel + ` · ${t.seconds}s`;
+  if (t.kind === "digit") {
+    $("pBig").textContent = t.label;
+    $("pBig").style.display = "block";
+    $("pTxt").textContent = '“' + t.prompt + '”';
+  } else if (t.kind === "otp") {
+    $("pBig").textContent = t.prompt;
+    $("pBig").style.fontSize = "38px";
+    $("pBig").style.display = "block";
+    $("pTxt").textContent = "";
+  } else {
+    $("pBig").style.display = "none";
+    $("pTxt").textContent = '“' + t.prompt + '”';
+  }
+  $("pHint").textContent = t.instruction;
+  $("btnRetake").disabled = !S.lastClipId;
+  setStatus($("recStatus"), "");
+}
+
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+async function countdown() {
+  const ov = $("cdOverlay");
+  ov.classList.remove("hide");
+  for (const n of ["3", "2", "1"]) { ov.textContent = n; await sleep(600); }
+  ov.textContent = "Nói!";
+  await sleep(280);
+  ov.classList.add("hide");
+}
+
+function recordFor(ms) {
+  return new Promise((resolve, reject) => {
+    let rec;
+    try {
+      rec = S.mime ? new MediaRecorder(S.stream, { mimeType: S.mime, videoBitsPerSecond: 2_000_000 })
+                   : new MediaRecorder(S.stream);
+    } catch (e) { return reject(e); }
+    const chunks = [];
+    let t0 = 0, timer = null, bar = $("recBar");
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onerror = (e) => { clearInterval(timer); reject(e.error || new Error("Lỗi ghi hình")); };
+    rec.onstop = () => {
+      clearInterval(timer);
+      bar.style.width = "0";
+      $("recLabel").classList.remove("on");
+      resolve({ blob: new Blob(chunks, { type: S.mime || "video/webm" }), ms: Math.round(performance.now() - t0) });
+    };
+    // timeslice giữ cho chunk về đều — trên iOS bản ghi ngắn dễ mất dữ liệu nếu
+    // chỉ nhận một chunk duy nhất lúc stop.
+    rec.start(200);
+    t0 = performance.now();
+    $("recLabel").classList.add("on");
+    timer = setInterval(() => {
+      bar.style.width = Math.min(100, (performance.now() - t0) / ms * 100) + "%";
+    }, 80);
+    setTimeout(() => { if (rec.state !== "inactive") { try { rec.stop(); } catch (_) {} } }, ms);
+  });
+}
+
+async function uploadClip(task, blob, durationMs, note) {
+  const fd = new FormData();
+  fd.append("contributor_id", S.cid);
+  fd.append("token", S.tok);
+  fd.append("session_id", S.sid);
+  fd.append("kind", task.kind);
+  fd.append("label", task.label);
+  fd.append("duration_ms", String(durationMs));
+  fd.append("client_note", note || "");
+  fd.append("clip", blob, `${task.kind}_${task.label}${S.ext}`);
+  const r = await fetch(API + "/clip", { method: "POST", body: fd });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.detail || ("HTTP " + r.status));
+  return d;
+}
+
+function setBusy(b) {
+  S.busy = b;
+  $("btnRec").disabled = b;
+  $("btnSkip").disabled = b;
+  $("btnFinish").disabled = b;
+  $("btnRetake").disabled = b || !S.lastClipId;
+}
+
+async function doTake(note) {
+  const t = S.tasks[S.idx];
+  if (!t || S.busy) return;
+  setBusy(true);
+  try {
+    await countdown();
+    const { blob, ms } = await recordFor(Math.round(t.seconds * 1000));
+    if (blob.size < 2048) throw new Error("Không ghi được dữ liệu, hãy thử lại.");
+    setStatus($("recStatus"), "Đang gửi…");
+    const d = await uploadClip(t, blob, ms, note);
+    S.lastClipId = d.clip_id;
+    S.uploaded++;
+    setStatus($("recStatus"), `Đã gửi ✓ (nội dung này đã có ${d.count_for_label} clip)`, "ok");
+    await sleep(500);
+    S.idx++;
+    renderTask();
+  } catch (e) {
+    setStatus($("recStatus"), "Lỗi: " + (e.message || e.name), "err");
+  } finally {
+    setBusy(false);
+  }
+}
+
+$("btnRec").onclick = () => doTake("");
+$("btnSkip").onclick = () => { if (S.busy) return; S.skipped++; S.idx++; S.lastClipId = null; renderTask(); };
+
+// Ghi lại: xoá bản vừa gửi rồi lùi về đúng nội dung đó. Clip đọc sai còn tệ hơn
+// clip thiếu, nên phải bỏ được bản lỗi thay vì chỉ gửi thêm bản mới.
+$("btnRetake").onclick = async () => {
+  if (!S.lastClipId || S.busy) return;
+  setBusy(true);
+  try {
+    const fd = new FormData();
+    fd.append("contributor_id", S.cid);
+    fd.append("token", S.tok);
+    fd.append("clip_id", S.lastClipId);
+    const r = await fetch(API + "/discard", { method: "POST", body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ("HTTP " + r.status));
+    S.lastClipId = null;
+    S.uploaded = Math.max(0, S.uploaded - 1);
+    if (S.idx > 0) S.idx--;
+    renderTask();
+    setStatus($("recStatus"), "Đã bỏ clip cũ, hãy ghi lại nội dung này.", "ok");
+  } catch (e) {
+    setStatus($("recStatus"), "Không bỏ được clip: " + e.message, "err");
+  } finally {
+    setBusy(false);
+  }
+};
+
+function finish() {
+  $("doneSummary").textContent =
+    `Bạn đã gửi ${S.uploaded} clip trong lượt này` + (S.skipped ? ` (bỏ qua ${S.skipped} nội dung).` : ".") +
+    " Dữ liệu của bạn giúp hệ thống nhận dạng khẩu hình và giọng nói tiếng Việt chính xác hơn.";
+  show("s-done");
+  showMyCode();
+  loadStats("kpisDone", "gridDone");
+}
+$("btnFinish").onclick = finish;
+
+$("btnAgain").onclick = async () => {
+  // Lượt mới = session_id mới, cùng contributor_id -> tạo được cặp cùng-người
+  // giữa các phiên, thứ dữ liệu quan trọng nhất cho ASV.
+  try {
+    const fd = new FormData();
+    fd.append("consent", "true"); fd.append("age_confirmed", "true");
+    fd.append("gender", $("gender").value);
+    fd.append("age_group", $("ageGroup").value);
+    fd.append("region", $("region").value);
+    fd.append("access_code", $("accessCode")?.value || "");
+    fd.append("contributor_id", localStorage.getItem(LS_CID) || "");
+    fd.append("token", localStorage.getItem(LS_TOK) || "");
+    const r = await fetch(API + "/enroll", { method: "POST", body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ("HTTP " + r.status));
+    S.cid = d.contributor_id; S.tok = d.token; S.sid = d.session_id; S.sessionIndex = d.session_index;
+    localStorage.setItem(LS_CID, S.cid); localStorage.setItem(LS_TOK, S.tok);
+    const tr = await fetch(`${API}/tasks?session_id=${S.sid}&contributor_id=${S.cid}&token=${encodeURIComponent(S.tok)}`);
+    const td = await tr.json();
+    S.tasks = td.tasks; S.idx = 0; S.uploaded = 0; S.skipped = 0; S.lastClipId = null;
+    if (!S.stream) await openCamera();
+    show("s-record");
+    renderTask();
+  } catch (e) { alert("Không bắt đầu lượt mới được: " + e.message); }
+};
+
+// Mã đóng góp: hiển thị để người tham gia có thể yêu cầu xoá dữ liệu về sau.
+// Nút tự xoá đã được gỡ theo yêu cầu; endpoint /withdraw phía server vẫn còn để
+// xử lý yêu cầu thủ công, nên quyền rút lại dữ liệu vẫn thực hiện được.
+function showMyCode(){
+  const cid = localStorage.getItem(LS_CID) || S.cid || "";
+  $("myCode").textContent = cid ? cid.slice(0, 8).toUpperCase() : "—";
+}
+$("btnCopyCode").onclick = async () => {
+  const t = $("myCode").textContent.trim();
+  if (!t || t === "—") return;
+  try { await navigator.clipboard.writeText(t); $("btnCopyCode").textContent = "Đã sao chép ✓"; }
+  catch(_) { $("btnCopyCode").textContent = "Hãy chọn và copy thủ công"; }
+  setTimeout(() => { $("btnCopyCode").textContent = "Sao chép mã"; }, 2000);
+};
+
+window.addEventListener("beforeunload", (e) => {
+  if (S.busy) { e.preventDefault(); e.returnValue = ""; }
+});
+
+checkEnv();
+loadStats("kpisIntro", null);
+refreshGate();
+</script>
+</body>
+</html>

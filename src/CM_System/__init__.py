@@ -1,0 +1,1 @@
+from CM_System.spoofing_score import evaluate_utterance
